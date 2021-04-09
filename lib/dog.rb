@@ -65,7 +65,7 @@ class Dog
         dog = DB[:conn].execute(sql, attributes[:name], attributes[:breed])
         # binding.pry
         if !dog.empty?
-            Dog.new_from_db(dog[0])
+            Dog.new_from_db(dog)
         else
             dog = self.create(attributes)
         end
