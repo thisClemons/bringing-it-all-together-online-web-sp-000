@@ -33,7 +33,7 @@ class Dog
         SQL
         
         DB[:conn].execute(sql, self.name, self.breed)
-        self.id = DB[:conn].execute("SELECT last_insert_rowid() FROM dogs")
+        self.id = DB[:conn].execute("SELECT last_insert_rowid() FROM dogs")[0][0]
         self
     end
 
@@ -56,20 +56,40 @@ class Dog
         Dog.new_from_db(dog[0])
     end
 
-    def self.find_or_create_by(attributes)
+    def self.find_or_create_by(name:, breed:)
         sql = <<-SQL
-            SELECT * FROM DOGS 
+            SELECT * FROM dogs 
             WHERE name = ? AND breed = ?
         SQL
         # binding.pry
-        dog = DB[:conn].execute(sql, attributes[:name], attributes[:breed])
+        dog = DB[:conn].execute(sql, name, breed)
         # binding.pry
         if !dog.empty?
-            Dog.new_from_db(dog)
+            Dog.new_from_db(dog[0])
         else
-            dog = self.create(attributes)
+            dog = self.create(name:name, breed:breed)
         end
+    end
 
+    def self.find_by_name(name)
+        sql = <<-SQL
+            SELECT * FROM dogs
+            WHERE name = ?
+            LIMIT 1
+        SQL
+
+        dog = DB[:conn].execute(sql, name)
+        Dog.new_from_db(dog[0])        
+    end
+
+    def update
+        sql = <<-SQL
+            UPDATE dogs 
+            SET name = ?, breed = ?
+            WHERE id = ?
+        SQL
+        
+        dog = DB[:conn].execute(sql, self.name, self.breed, self.id)        
     end
 
 end
